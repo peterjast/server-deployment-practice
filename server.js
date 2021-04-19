@@ -10,34 +10,39 @@ const app = express();
 // internal - custom node module
 const stamper = require('./middleware/stamper.js');
 const notFoundHandler = require('./handlers/404.js');
-const errors = require('./handlers/500.js');
+const errorHandler = require('./handlers/500.js');
 
-app.get('/test-route', (req, res) => {
-    res.json({msg: 'this worked' }); //express gives us the ability to quickly send a json response
-});
+app.get('/', stamper, (req, res) => {
+    res.status(200).send('Hello World')
+})
 
 // route level mw - happens "in the middle" of the process
 app.get('/data', stamper, (req, res) => {
-    let output = { time: req.timestamp };
-    res.json(output);
+    let outputObject = { 
+        10: 'even',
+        5: 'odd',
+        'time': req.timestamp 
+    }
+
+    res.status(200).json(outputObject);
 });
 
-app.get('/purposeful-error', (req, res, next) => {
-    next('some words'); // when you pass "next" anything, you are now "nexting" this to your next middleware function
+app.get('/bad', (req, res, next) => {
+    next('you messed up'); // when you pass "next" anything, you are now "nexting" this to your next middleware function
 });
 
 // app.use -> global mw  function -> every request is ran through this
 
 // error handlers live at the bottom of your server file
 app.use('*', notFoundHandler);
-app.use(errors);
+app.use(errorHandler);
 
 // CLIENT -> req -> SERVER -> res -> CLIENT
 
 
-function start(PORT){
-    app.listen(PORT, () => {
-        console.log(`server up on ${PORT}`);
+function start(port){
+    app.listen(port, () => {
+        console.log(`server up on ${port}`);
     });
 };
 
